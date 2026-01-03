@@ -20,9 +20,11 @@ export function Step3({ formData, setFormData, onFocus }: Props) {
   ];
 
   /* ---------------- バリデーション ---------------- */
-  const [touched, setTouched] = useState({ relief: false, awareness: false });
-  const reliefError = touched.relief && formData.step3Reliefs.trim().length < 5;
+  const [touched, setTouched] = useState({ relief: false, awareness: false, score: false });
+  const reliefError = touched.relief && formData.step3Reliefs.trim().length < 2;
   const awarenessError = touched.awareness && formData.step3Awareness === "";
+  const scoreError = touched.score && formData.step3ReliefScore === null;
+  const scoreOptions = Array.from({ length: 11 }, (_, i) => i);
 
   const handleReliefBlur = () => setTouched((t) => ({ ...t, relief: true }));
   const handleAwarenessChange = (value: string) => {
@@ -41,7 +43,7 @@ export function Step3({ formData, setFormData, onFocus }: Props) {
       </h2>
 
       {/* 行動・習慣 */}
-      <label className="block mb-2 font-semibold">少し楽になれた行動・習慣（自由記述）</label>
+      <label className="block mb-2 font-semibold">少し楽になれた行動・習慣：自由記述（無い場合は「なし」と入力）</label>
       <textarea
         className={`w-full h-24 p-2 border rounded-md ${reliefError ? "border-red-500" : "border-gray-300"}`}
         placeholder="例：深呼吸した、日記を書いた、誰かに話した など"
@@ -50,7 +52,7 @@ export function Step3({ formData, setFormData, onFocus }: Props) {
         onChange={(e) => setFormData((p) => ({ ...p, step3Reliefs: e.target.value }))}
         onBlur={handleReliefBlur}
       />
-      {reliefError && <p className="text-xs text-red-500 mt-1">5文字以上で入力してください</p>}
+      {reliefError && <p className="text-xs text-red-500 mt-1">2文字以上で入力してください</p>}
 
       {/* 気づきやすい方法 */}
       <label className="block mt-6 mb-2 font-semibold">自分が”気づきやすい”方法（１つ選んでください）</label>
@@ -73,6 +75,24 @@ export function Step3({ formData, setFormData, onFocus }: Props) {
       {awarenessError && (
         <p className="text-xs text-red-500 mt-1">どれか 1 つ選択してください</p>
       )}
+      <label className="block mt-6 mb-2 font-semibold">少し楽になれた度合い（0〜10）</label>
+      <select
+        className={`w-full p-2 border rounded-md ${scoreError ? "border-red-500" : "border-gray-300"}`}
+        value={formData.step3ReliefScore === null ? "" : String(formData.step3ReliefScore)}
+        onFocus={onFocus}
+        onChange={(e) => {
+          const v = e.target.value === "" ? null : Number(e.target.value);
+          setFormData((p) => ({ ...p, step3ReliefScore: v }));
+        }}
+        onBlur={() => setTouched((t) => ({ ...t, score: true }))}
+      >
+        <option value="">選択してください</option>
+        {scoreOptions.map((n) => (
+          <option key={n} value={n}>{n}</option>
+        ))}
+      </select>
+      {scoreError && <p className="text-xs text-red-500 mt-1">0〜10で選択してください</p>}
+      <p className="text-xs text-gray-500 mt-1">0=変化なし / 10=かなり楽になった</p>
     </section>
   );
 }

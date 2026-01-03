@@ -16,6 +16,8 @@ type Props = {
   onFocus: () => void;
 };
 
+const scoreOptions = Array.from({ length: 11 }, (_, i) => i);
+
 export function Step2({ formData, setFormData, onFocus }: Props) {
   const factors = [
     {
@@ -101,6 +103,22 @@ export function Step2({ formData, setFormData, onFocus }: Props) {
           );
         })}
       </div>
-    </section>
+      <label className="block mt-6 mb-2 font-semibold">疲労/余裕（0〜10）</label>
+      <select
+        className="w-full p-2 border rounded-md border-gray-300"
+        value={formData.step2Fatigue === null ? "" : String(formData.step2Fatigue)}
+        onFocus={onFocus}
+        onChange={(e) => {
+          const v = e.target.value === "" ? null : Number(e.target.value);
+          setFormData((p) => ({ ...p, step2Fatigue: v }));
+        }}
+      >
+        <option value="">選択してください</option>
+        {scoreOptions.map((n) => (
+          <option key={n} value={n}>{n}</option>
+        ))}
+      </select>
+      <p className="text-xs text-gray-500 mt-1">0=余裕あり / 10=かなり消耗している</p>
+      </section>
   );
 }

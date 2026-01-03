@@ -12,9 +12,11 @@ type Props = {
 
 export function Step4({ formData, setFormData, onFocus }: Props) {
   /* ---------------- バリデーション ---------------- */
-  const [touched, setTouched] = useState({ name: false, guide: false });
+  const [touched, setTouched] = useState({ name: false, guide: false, confidence: false });
   const nameError = touched.name && formData.step4Name.trim().length < 2; // 2文字以上
-  const guideError = touched.guide && formData.step4Guide.trim().length < 5; // 5文字以上
+  const guideError = touched.guide && formData.step4Guide.trim().length < 2; // 2文字以上
+  const confidenceError = touched.confidence && formData.step4Confidence === null;
+  const scoreOptions = Array.from({ length: 11 }, (_, i) => i);
 
   return (
     <section className="mb-8">
@@ -24,7 +26,7 @@ export function Step4({ formData, setFormData, onFocus }: Props) {
       </h2>
 
       {/* 名前 */}
-      <label className="block mb-2 font-semibold">あなたの名前（ニックネームでもOK）</label>
+      <label className="block mb-2 font-semibold">あなたの名前（ニックネームでもOK／2文字以上）</label>
       <input
         type="text"
         className={`w-full p-2 border rounded-md ${nameError ? "border-red-500" : "border-gray-300"}`}
@@ -49,8 +51,26 @@ export function Step4({ formData, setFormData, onFocus }: Props) {
         onBlur={() => setTouched((t) => ({ ...t, guide: true }))}
       />
       {guideError && (
-        <p className="text-xs text-red-500 mt-1">5文字以上で入力してください</p>
+        <p className="text-xs text-red-500 mt-1">2文字以上で入力してください</p>
       )}
+      <label className="block mt-6 mb-2 font-semibold">次回、気づけそう度（0〜10）</label>
+      <select
+        className={`w-full p-2 border rounded-md ${confidenceError ? "border-red-500" : "border-gray-300"}`}
+        value={formData.step4Confidence === null ? "" : String(formData.step4Confidence)}
+        onFocus={onFocus}
+        onChange={(e) => {
+          const v = e.target.value === "" ? null : Number(e.target.value);
+          setFormData((p) => ({ ...p, step4Confidence: v }));
+        }}
+        onBlur={() => setTouched((t) => ({ ...t, confidence: true }))}
+      >
+        <option value="">選択してください</option>
+        {scoreOptions.map((n) => (
+          <option key={n} value={n}>{n}</option>
+        ))}
+      </select>
+      {confidenceError && <p className="text-xs text-red-500 mt-1">0〜10で選択してください</p>}
+      <p className="text-xs text-gray-500 mt-1">0=気づける気がしない / 10=かなり気づける</p>
     </section>
   );
 }

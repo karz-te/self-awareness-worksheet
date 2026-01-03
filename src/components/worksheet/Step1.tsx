@@ -14,6 +14,8 @@ type Props = {
   onFocus: () => void; // 親から渡されるフォーカスハイライト用
 };
 
+const scoreOptions = Array.from({ length: 11 }, (_, i) => i);
+
 export function Step1({ formData, setFormData, onFocus }: Props) {
   const feelings = ["不安", "怒り", "悲しみ", "焦り", "孤独", "その他"];
   const inputFocus = "transition focus:outline-none focus:bg-indigo-50 focus:ring-indigo-400";
@@ -29,9 +31,10 @@ export function Step1({ formData, setFormData, onFocus }: Props) {
   };
 
   /* ----- 即時バリデーション ----- */
-  const [touched, setTouched] = useState({ scene: false, body: false });
-  const sceneError = touched.scene && formData.step1Scene.trim().length < 5;
-  const bodyError = touched.body && formData.step1Body.trim().length < 5;
+  const [touched, setTouched] = useState({ scene: false, body: false, intensity: false });
+  const sceneError = touched.scene && formData.step1Scene.trim().length < 2;
+  const bodyError = touched.body && formData.step1Body.trim().length < 2;
+  const intensityError = touched.intensity && formData.step1Intensity === null;
 
   /* ----- Render ----- */
   return (
@@ -51,7 +54,7 @@ export function Step1({ formData, setFormData, onFocus }: Props) {
         onChange={(e) => setFormData((p) => ({ ...p, step1Scene: e.target.value }))}
         onBlur={() => setTouched((t) => ({ ...t, scene: true }))}
       />
-      {sceneError && <p className="text-xs text-red-500 mt-1">5文字以上で入力してください</p>}
+      {sceneError && <p className="text-xs text-red-500 mt-1">2文字以上で入力してください</p>}
 
       {/* 感情選択 */}
       <label className="block mt-6 mb-2 font-semibold">そのときの感情（ひとつ選択）</label>
@@ -77,8 +80,28 @@ export function Step1({ formData, setFormData, onFocus }: Props) {
         )}
       </div>
 
+      <label className="block mt-6 mb-2 font-semibold">暴走の強さ（0〜10）</label>
+      <select
+        className={`w-full p-2 border rounded-md ${intensityError ? "border-red-500" : "border-gray-300"}`}
+        value={formData.step1Intensity === null ? "" : String(formData.step1Intensity)}
+        onFocus={onFocus}
+        onChange={(e) => {
+          const v = e.target.value === "" ? null : Number(e.target.value);
+          setFormData((p) => ({ ...p, step1Intensity: v }));
+        }}
+        onBlur={() => setTouched((t) => ({ ...t, intensity: true }))}
+      >
+        <option value="">選択してください</option>
+        {scoreOptions.map((n) => (
+          <option key={n} value={n}>{n}</option>
+        ))}
+      </select>
+      {intensityError && <p className="text-xs text-red-500 mt-1">0〜10で選択してください</p>}
+      <p className="text-xs text-gray-500 mt-1">0=ほぼ落ち着いている / 10=制御不能に近い</p>
+
+
       {/* 身体反応 */}
-      <label className="block mt-6 mb-2 font-semibold">身体に出た反応（自由記述）</label>
+      <label className="block mt-6 mb-2 font-semibold">身体に出た反応：自由記述（無い場合は「なし」と入力）</label>
       <textarea
         className={`w-full h-20 p-2 border rounded-md ${bodyError ? "border-red-500" : "border-gray-300"}`}
         placeholder="例：胸が苦しくなる、呼吸が浅くなる、手が冷たくなる など"
@@ -87,7 +110,7 @@ export function Step1({ formData, setFormData, onFocus }: Props) {
         onChange={(e) => setFormData((p) => ({ ...p, step1Body: e.target.value }))}
         onBlur={() => setTouched((t) => ({ ...t, body: true }))}
       />
-      {bodyError && <p className="text-xs text-red-500 mt-1">5文字以上で入力してください</p>}
+      {bodyError && <p className="text-xs text-red-500 mt-1">2文字以上で入力してください</p>}
     </section>
   );
 }
